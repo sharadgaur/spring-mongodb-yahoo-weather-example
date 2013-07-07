@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:mongo="http://www.springframework.org/schema/data/mongo"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context-3.1.xsd
+       http://www.springframework.org/schema/mvc
+       http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd
+       http://www.springframework.org/schema/data/mongo
+      http://www.springframework.org/schema/data/mongo/spring-mongo-1.0.xsd">
+
+  	<context:annotation-config />
+    <context:component-scan base-package="com.phunware.weather.controller" />
+
+   
+    
+	<mvc:annotation-driven />
+
+    <mongo:mongo host="localhost" port="27017" />
+    <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
+        <constructor-arg ref="mongo" />
+        <constructor-arg name="databaseName" value="weather" />
+    </bean>
+     <mongo:repositories  base-package="com.phunware.weather.db" />
+     	
+     	
+	<bean id="loadService" class="com.phunware.weather.ConfigApp"	init-method="init">
+		<property name="log4jConfig" value="/WEB-INF/log4j.properties"/>
+		<property name="root" value="/"/>
+		<property name="data" value="/data/Texas.csv"/>
+		<property name="mapRedTemplates" value="/mapred"/>
+	</bean>
+	
+ 	<bean id="gson" class="com.google.gson.Gson"/>
+ 	<bean id="zipRepo" class="com.phunware.weather.db.service.ZipCodeRepositoryImpl"/>
+ 	<bean id="weatherRepo" class="com.phunware.weather.db.service.WeatherByZipCodeRepositoryImpl"/>
+ 	<bean id="lowHighAvgRepo" class="com.phunware.weather.db.service.LowHighAvgTempByZipCodeRepositoryImpl"/>
+ 	<bean id="yahooService" class="com.phunware.weather.util.YahooWeatherReader"/>
+ 	<bean id="mapRedTemplateReader" class="com.phunware.weather.util.TemplateReader"/>
+ 	
+ 	<bean id="populateZipCodeHelper" class="com.phunware.weather.controller.helper.PopulateZipCodeHelper">
+ 	        <constructor-arg ref="zipRepo" />
+ 	</bean>
+  	<bean id="populateWeatheHighLowHelper" class="com.phunware.weather.controller.helper.PopulateWeatheHighLowHelper">
+ 	        <constructor-arg ref="zipRepo" />
+ 	        <constructor-arg ref="weatherRepo" />
+ 	        <constructor-arg ref="yahooService" />
+ 	</bean>
+ 	 <bean id="populateLowHighAvgTempHelper" class="com.phunware.weather.controller.helper.PopulateLowHighAvgTempHelper">
+ 	        <constructor-arg ref="mapRedTemplateReader" />
+ 	        <constructor-arg ref="lowHighAvgRepo" />
+ 	        <constructor-arg ref="weatherRepo" />
+ 	</bean>
+ 	<bean id="populateForecastHelper" class="com.phunware.weather.controller.helper.PopulateForecastHelper">
+ 	        <constructor-arg ref="yahooService" />
+ 	        <constructor-arg ref="lowHighAvgRepo" />
+ 	</bean>
+
+</beans>
